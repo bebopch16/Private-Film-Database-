@@ -36,4 +36,4 @@ binding = "ASSETS"
 # 把它填到下面。没填的话部署会失败。
 [[kv_namespaces]]
 binding = "SYNC"
-id = "在此填入 KV namespace 的 id"
+id = "filmdb_sync"
