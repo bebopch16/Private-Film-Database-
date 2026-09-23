@@ -1,0 +1,39 @@
+# 电影工作台 · Cloudflare Worker 配置
+# ============================================================
+# 作用：同一域名下同时提供 ① 静态站点（deploy/ 里的 PWA）② 云同步 API（/api/sync）
+#
+# ★ 用法：把本文件放到「仓库根目录」，与 worker.js 同级。
+#   · 仓库里静态文件在 deploy/ 子目录 → 用下面的 directory = "./deploy"
+#   · 仓库里静态文件直接堆在根目录（index.html 与 wrangler.toml 同级）
+#     → 把 directory 改成 "./"（并删掉下面那行注释里的说明）
+#
+# ★ 必须替换的地方：[[kv_namespaces]] 的 id（见下方注释）
+# ★ 如果原来的 wrangler.toml 已有 name / compatibility_date，请保留原值不动。
+
+name = "private-film-database"
+
+# 云同步 API 的入口（本文件就是我们新加的 Worker 脚本）
+main = "worker.js"
+
+# 兼容性日期：决定 Cloudflare 运行时的行为开关。
+# ⚠️ 若你原有配置里已有这一行，请保留原值；没有则用下面这个即可。
+compatibility_date = "2025-06-01"
+
+# ------------------------------------------------------------
+# 静态资产：把整个站点交给 Cloudflare 托管
+# ------------------------------------------------------------
+# binding = "ASSETS" 是给 worker.js 用的 —— 非 /api/ 的请求会通过
+# env.ASSETS.fetch(req) 原样交回静态站点，所以页面、sw.js、manifest.json
+# 的行为和现在完全一致。
+[assets]
+directory = "./deploy"
+binding = "ASSETS"
+
+# ------------------------------------------------------------
+# 云同步存储：Cloudflare KV（单键存整个 overlay JSON）
+# ------------------------------------------------------------
+# 执行 `npx wrangler kv namespace create filmdb_sync` 后会打印一个 id，
+# 把它填到下面。没填的话部署会失败。
+[[kv_namespaces]]
+binding = "SYNC"
+id = "在此填入 KV namespace 的 id"
